@@ -26,13 +26,12 @@ export async function handleCalculate(req: Request, res: Response): Promise<void
 		const hours: number = params.hours;
 		const startDate: string | undefined = params.startDate;
 
-		const result: Temporal.ZonedDateTime | undefined = await calculateWorkingDate(
+		const result: Temporal.Instant | undefined = await calculateWorkingDate(
 			startDate,
 			days,
 			hours
 		);
 
-		// Respuesta de ejemplo (reemplazar con tu cálculo real)
 		const response: SuccessResponse = {
 			date: result ? result.toString() : "Invalid date"
 		};

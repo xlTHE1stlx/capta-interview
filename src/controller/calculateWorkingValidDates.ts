@@ -1,6 +1,5 @@
 import { Temporal as tp } from "@js-temporal/polyfill";
 import { isHoliday } from "./utils";
-import { get } from "http";
 
 function getCurrentTimeForAPIClean(): tp.PlainDateTime {
 	const currentTime: tp.ZonedDateTime = tp.Now.instant().toZonedDateTimeISO("America/Bogota");
@@ -94,71 +93,64 @@ async function addDays(date: tp.PlainDateTime, days: number): Promise<tp.PlainDa
 	return date;
 }
 
-async function addHours(date: tp.PlainDateTime, hours: number): Promise<tp.PlainDateTime> {
-	console.log("Initial date in addHours:", date.toString());
-	console.log("Initial hours in addHours:", hours);
-	console.log("Hour of the day:", date.hour, "\n");
-	let finalDate: tp.PlainDateTime = date;
-	if (
-		compareDates(finalDate, getLunchStartTime(finalDate)) >= 0 &&
-		compareDates(finalDate, getLunchEndTime(finalDate)) < 0
-	) {
-		finalDate = getLunchStartTime(finalDate);
-	}
-
-	if (
-		compareDates(date.add({ hours }), getLunchStartTime(finalDate)) > 0 &&
-		compareDates(finalDate, getLunchEndTime(finalDate)) < 0
-	) {
-		finalDate = await addHours(finalDate, 1);
-	}
-	finalDate = date.add({ hours });
+async function addHours(date: tp.PlainDateTime, hours_to_add: number): Promise<tp.PlainDateTime> {
 	let leftTime: number | undefined = undefined;
-	if (compareDates(finalDate, getMinDateTime(finalDate)) < 0) {
-		leftTime = 8 - finalDate.hour;
-		console.log("Left time 8:", leftTime);
-		finalDate = getMinDateTime(finalDate);
+	if (compareDates(date, getMinDateTime(date)) < 0) {
+		leftTime = getMinDateTime(date).since(date, { largestUnit: "hours" }).hours;
+		date = getMinDateTime(date);
 	}
 
-	if (compareDates(finalDate, getMaxDateTime(finalDate)) > 0) {
-		leftTime = finalDate.hour - 17;
-		console.log("Left time 17:", leftTime);
-		finalDate = await addDays(finalDate, 1);
-		finalDate = getMinDateTime(finalDate);
-		finalDate = await addHours(finalDate, leftTime);
+	if (
+		compareDates(date.add({ hours: hours_to_add }), getLunchStartTime(date)) > 0 &&
+		compareDates(date, getLunchEndTime(date)) < 0 &&
+		date.hour <= 12
+	) {
+		date = date.add({ hours: 1 });
 	}
-	console.log("Final date in addHours:", finalDate.toString(), "\n");
+	if (
+		compareDates(date, getLunchStartTime(date)) >= 0 &&
+		compareDates(date, getLunchEndTime(date)) < 0 &&
+		date.hour === 12
+	) {
+		date = getLunchStartTime(date);
+	}
 
-	return finalDate;
+	date = date.add({ hours: hours_to_add });
+
+	if (compareDates(date, getMaxDateTime(date)) > 0) {
+		leftTime = date.since(getMaxDateTime(date), { largestUnit: "hours" }).hours;
+		date = await addDays(date, 1);
+		date = getMinDateTime(date);
+		date = await addHours(date, leftTime);
+	}
+
+	return date;
 }
 
 export function calculateWorkingDate(
 	startDate: string | undefined,
 	days: number,
 	hours: number
-): Promise<tp.ZonedDateTime | undefined> {
-	return new Promise(
-		async (resolve: (value: tp.ZonedDateTime | undefined) => void): Promise<void> => {
-			let date: tp.ZonedDateTime | tp.PlainDateTime | undefined;
-			if (!startDate) {
-				date = getCurrentTimeForAPIClean();
-			} else {
-				date = parseUserDate(startDate);
-			}
-
-			if (days > 0) {
-				date = await addDays(date, days);
-			}
-			if (hours > 0) {
-				date = await addHours(date, hours);
-			}
-			date = date.toZonedDateTime("America/Bogota");
-			console.log("output: ", date.toString());
-			// date.setDate(date.getDate() + days);
-			// date.setHours(date.getHours() + hours);
-			console.log({ days, hours });
-			resolve(date);
-			return;
+): Promise<tp.Instant | undefined> {
+	return new Promise(async (resolve: (value: tp.Instant | undefined) => void): Promise<void> => {
+		let date: tp.ZonedDateTime | tp.PlainDateTime | undefined;
+		if (!startDate) {
+			date = getCurrentTimeForAPIClean();
+		} else {
+			date = parseUserDate(startDate);
 		}
-	);
+
+		if (days > 0) {
+			date = await addDays(date, days);
+		}
+		if (hours >= 0) {
+			date = await addHours(date, hours);
+		}
+		date = date.toZonedDateTime("America/Bogota");
+		const bogotaTime: tp.ZonedDateTime = tp.ZonedDateTime.from(date.toString());
+		date = bogotaTime.withTimeZone("UTC");
+		const utcString: tp.Instant = date.toInstant();
+		resolve(utcString);
+		return;
+	});
 }
