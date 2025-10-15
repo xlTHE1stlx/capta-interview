@@ -103,7 +103,7 @@ async function addHours(date: tp.PlainDateTime, hours_to_add: number): Promise<t
 	if (
 		compareDates(date.add({ hours: hours_to_add }), getLunchStartTime(date)) > 0 &&
 		compareDates(date, getLunchEndTime(date)) < 0 &&
-		date.hour <= 12
+		compareDates(date, getLunchStartTime(date)) > 0
 	) {
 		date = date.add({ hours: 1 });
 	}
