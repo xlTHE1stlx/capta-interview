@@ -19,7 +19,7 @@ El objetivo de este proyecto es implementar una solución **precisa, eficiente y
 
 ## ⚙️ Endpoints
 
-### `GET /api/working-date`
+### `GET /api/
 
 Calcula la fecha hábil resultante a partir de los parámetros proporcionados.
 
@@ -34,7 +34,7 @@ Calcula la fecha hábil resultante a partir de los parámetros proporcionados.
 **Ejemplo de petición:**
 
 ```
-GET /api/working-date?days=1&hours=4
+GET /api/?days=1&hours=4
 ```
 
 **Ejemplo de respuesta exitosa (200 OK):**
