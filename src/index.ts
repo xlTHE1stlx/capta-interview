@@ -1,8 +1,9 @@
+import { Request, Response } from "express";
 import app from "./app";
 import "dotenv/config";
 
-const port: number = Number(process.env["PORT"]);
-
-app.listen(port, (): void => {
-	console.log(`Server is running on http://localhost:${port}`);
+app.get("/", (_req: Request, res: Response): void => {
+	res.json({ message: "API activa 🚀" });
 });
+
+export default app;
