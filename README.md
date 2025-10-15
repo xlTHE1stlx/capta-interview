@@ -100,7 +100,11 @@ GET /api/?days=1&hours=4
     ```
     http://localhost:3000/api/?date&days&hours
     ```
+5. Acceder al endpoint remoto:
 
+   ```
+   https://capta-interview-hx6j-5x1hm94wo-xlthe1stlxs-projects.vercel.app/api/
+   ```
 ---
 
 ## ☁️ Despliegue
@@ -108,8 +112,9 @@ GET /api/?days=1&hours=4
 La API puede desplegarse fácilmente en plataformas como:
 
 -   **Vercel**
--   **Railway**
--   **Render**
+```
+https://capta-interview-hx6j-5x1hm94wo-xlthe1stlxs-projects.vercel.app/api/
+```
 -   **AWS Lambda (con CDK)** _(bonus recomendado)_
 
 ---
