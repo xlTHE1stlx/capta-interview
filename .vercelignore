@@ -1,6 +1,10 @@
-node_modules/
-build/
-dist/
-.env
-*.log
+node_modules
+build
+dist
+.env.local
+.env._.local
+_.log
 .DS_Store
+.git
+.gitignore
+README.md
