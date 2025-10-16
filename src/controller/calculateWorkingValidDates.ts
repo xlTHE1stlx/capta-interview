@@ -122,7 +122,37 @@ async function addHours(date: tp.PlainDateTime, hours_to_add: number): Promise<t
 		date = date.add({ hours: 1 });
 	}
 
+	if (
+		compareDates(
+			date.add({ hours: hours_to_add }),
+			tp.PlainDateTime.from({
+				year: date.year,
+				month: date.month,
+				day: date.day,
+				hour: 23,
+				minute: 59,
+				second: 59
+			})
+		) > 0 &&
+		compareDates(date, getLunchEndTime(date)) > 0
+	) {
+		date = await addDays(date, 1);
+		date = getMinDateTime(date);
+	}
+
 	date = date.add({ hours: hours_to_add });
+
+	if (compareDates(date, getMaxDateTime(date)) > 0 && hours_to_add === 0) {
+		date = await addDays(date, 1);
+		date = tp.PlainDateTime.from({
+			year: date.year,
+			month: date.month,
+			day: date.day,
+			hour: 8,
+			minute: 0,
+			second: 0
+		});
+	}
 
 	if (compareDates(date, getMaxDateTime(date)) > 0) {
 		leftTime = date.since(getMaxDateTime(date), { largestUnit: "hours" }).hours;
